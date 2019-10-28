@@ -1,0 +1,93 @@
+<html>
+  <body>
+    <div id='content'>
+      <h1>Events</h1>
+      <ul id='events'></ul>
+	</div>
+	
+    <a href='#' id='authorize-button' onclick='handleAuthClick();'>Login</a>
+	<a href="#" onclick='makeApiCall();'>Crear evento</a>
+
+	<pre id="content" style="white-space: pre-wrap;"></pre>
+	
+	<div>
+		<iframe src="https://calendar.google.com/calendar/embed?height=600&amp;wkst=1&amp;bgcolor=%23ffffff&amp;ctz=America%2FLima&amp;src=cTkycTI3MmM0NXBlZ2VkanA5cWpvMWkyMG9AZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ&amp;color=%23009688&amp;showCalendars=0&amp;showTabs=0&amp;showPrint=0&amp;showDate=1&amp;showNav=1&amp;showTz=1" style="border-width:0" width="800" height="600" frameborder="0" scrolling="no"></iframe>
+	</div>
+    
+    <script>
+		var clientId = '824715349941-2ed6grpnaa2in3b5av8smpn40ml0qpu7.apps.googleusercontent.com';
+		var apiKey = 'AIzaSyCsniVN695-UZt_q4sozYy2ON2Fjd_PJRE';
+        var scopes = 'https://www.googleapis.com/auth/calendar';
+
+        function handleClientLoad() {
+            gapi.client.setApiKey(apiKey);
+            window.setTimeout(checkAuth,1);
+            checkAuth();
+        }
+
+        function checkAuth() {
+            gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: true},
+            handleAuthResult);
+        }
+
+        function handleAuthResult(authResult) {
+            var authorizeButton = document.getElementById('authorize-button');
+            if (authResult) {
+                authorizeButton.style.visibility = 'hidden';
+            } else {
+                authorizeButton.style.visibility = '';
+                authorizeButton.onclick = handleAuthClick;
+            }
+        }
+
+        function handleAuthClick(event) {
+            gapi.auth.authorize(
+                {client_id: clientId, scope: scopes, immediate: false},
+                handleAuthResult);
+            return false;
+		}     
+		
+
+        function makeApiCall() {
+			var event = {
+				'summary': 'Google I/O 2019',
+				'location': '800 Howard St., San Francisco, CA 94103',
+				'description': 'A chance to hear more about Google\'s developer products.',
+				'start': {
+					'dateTime': '2019-10-31T09:00:00-07:00',
+					'timeZone': 'America/Los_Angeles'
+				},
+				'end': {
+					'dateTime': '2019-10-31T17:00:00-07:00',
+					'timeZone': 'America/Los_Angeles'
+				},
+				'recurrence': [
+					'RRULE:FREQ=DAILY;COUNT=2'
+				],
+				'attendees': [
+					{'email': 'arabela@monki.pe'}
+				],
+				'reminders': {
+					'useDefault': false,
+					'overrides': [
+						{'method': 'email', 'minutes': 24 * 60},
+						{'method': 'popup', 'minutes': 10}
+					]
+				}
+			};			
+
+            gapi.client.load('calendar', 'v3', function() {
+				var request = gapi.client.calendar.events.insert({
+					'calendarId': 'q92q272c45pegedjp9qjo1i20o@group.calendar.google.com',
+					'resource': event
+				});
+
+				request.execute(function(event) {
+					console.log(event)
+				});
+            });
+        }
+    </script>
+    <script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
+  </body>
+</html>
